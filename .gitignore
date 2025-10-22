@@ -1,7 +1,9 @@
---TAO--
+# --TAO--
 .vscode
-.idea
---TAO--
+.idea/
+target/
+data/
+# --TAO--
 
 # Compiled class file
 *.class
