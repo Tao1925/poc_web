@@ -344,12 +344,25 @@
         // 加载用户答案
         function loadAnswer(questionId) {
             fetch(`/quiz/answer/${questionId}?username=${currentUsername}`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(answer => {
                     const editor = document.getElementById('answer-editor');
-                    editor.innerHTML = answer.content || '';
                     
-                    // 标记该题目已答题
+                    // 检查答案内容是否存在且不为空
+                    if (answer.content && answer.content.trim()) {
+                        editor.innerHTML = answer.content;
+                        console.log(`加载题目 ${questionId} 的答案成功，内容长度: ${answer.content.length}`);
+                    } else {
+                        editor.innerHTML = '';
+                        console.log(`题目 ${questionId} 暂无答案`);
+                    }
+                    
+                    // 标记该题目已答题状态
                     const questionItem = document.querySelector(`[data-question-id="${questionId}"]`);
                     if (answer.content && answer.content.trim()) {
                         questionItem.classList.add('answered');
@@ -359,6 +372,7 @@
                 })
                 .catch(error => {
                     console.error('加载答案失败:', error);
+                    showSaveStatus('error', '加载答案失败: ' + error.message);
                 });
         }
         
@@ -382,31 +396,44 @@
         
         // 保存答案
         function saveAnswer() {
-            if (!currentQuestionId) return;
+            if (!currentQuestionId) {
+                console.warn('没有选择题目，无法保存答案');
+                return;
+            }
             
             const content = document.getElementById('answer-editor').innerHTML;
+            
+            // 检查内容是否为空
+            if (!content || content.trim() === '' || content === '<br>' || content === '<div><br></div>') {
+                console.log('答案内容为空，跳过保存');
+                return;
+            }
             
             const formData = new FormData();
             formData.append('questionId', currentQuestionId);
             formData.append('content', content);
             formData.append('username', currentUsername);
             
+            console.log(`正在保存题目 ${currentQuestionId} 的答案，内容长度: ${content.length}`);
+            
             fetch('/quiz/save', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.text())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
             .then(result => {
-                if (result === '保存成功') {
-                    showSaveStatus('success', '保存成功');
+                console.log('保存结果:', result);
+                if (result.includes('成功')) {
+                    showSaveStatus('success', result);
                     
                     // 标记该题目已答题
                     const questionItem = document.querySelector(`[data-question-id="${currentQuestionId}"]`);
-                    if (content.trim()) {
-                        questionItem.classList.add('answered');
-                    } else {
-                        questionItem.classList.remove('answered');
-                    }
+                    questionItem.classList.add('answered');
                 } else {
                     showSaveStatus('error', '保存失败: ' + result);
                 }
@@ -466,7 +493,29 @@
                     this.innerHTML = '';
                 }
             });
+            
+            // 加载用户统计信息
+            loadUserStats();
         });
+        
+        // 加载用户统计信息
+        function loadUserStats() {
+            fetch(`/quiz/stats/${currentUsername}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(stats => {
+                    console.log('用户统计信息:', stats);
+                    // 可以在页面上显示统计信息
+                    showSaveStatus('success', stats);
+                })
+                .catch(error => {
+                    console.error('加载统计信息失败:', error);
+                });
+        }
     </script>
 </body>
 </html>

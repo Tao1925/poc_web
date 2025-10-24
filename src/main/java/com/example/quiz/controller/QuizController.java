@@ -1,5 +1,6 @@
 package com.example.quiz.controller;
 
+import com.example.quiz.dto.AnswerDTO;
 import com.example.quiz.dto.QuestionDTO;
 import com.example.quiz.model.*;
 import com.example.quiz.repository.*;
@@ -70,15 +71,26 @@ public class QuizController {
     
     @GetMapping("/quiz/answer/{questionId}")
     @ResponseBody
-    public ResponseEntity<Answer> getAnswer(@PathVariable Long questionId, @RequestParam String username) {
+    public ResponseEntity<AnswerDTO> getAnswer(@PathVariable Long questionId, @RequestParam String username) {
         Optional<User> userOptional = userRepository.findByUsername(username);
         if (userOptional.isPresent()) {
             Optional<Answer> answerOptional = answerRepository.findByQuestionIdAndUserId(questionId, userOptional.get().getId());
             if (answerOptional.isPresent()) {
-                return ResponseEntity.ok(answerOptional.get());
+                Answer answer = answerOptional.get();
+                AnswerDTO answerDTO = new AnswerDTO(
+                    answer.getId(),
+                    answer.getContent(),
+                    answer.getCreatedAt(),
+                    answer.getUpdatedAt(),
+                    answer.getQuestion().getId(),
+                    answer.getUser().getId(),
+                    username
+                );
+                return ResponseEntity.ok(answerDTO);
             }
         }
-        return ResponseEntity.ok(new Answer()); // 返回空答案
+        // 返回空答案DTO
+        return ResponseEntity.ok(new AnswerDTO());
     }
     
     @PostMapping("/quiz/save")
@@ -87,34 +99,71 @@ public class QuizController {
                                            @RequestParam String content, 
                                            @RequestParam String username) {
         try {
+            // 验证用户是否存在
             Optional<User> userOptional = userRepository.findByUsername(username);
-            Optional<Question> questionOptional = questionRepository.findById(questionId);
-            
-            if (userOptional.isPresent() && questionOptional.isPresent()) {
-                User user = userOptional.get();
-                Question question = questionOptional.get();
-                
-                // 查找现有答案
-                Optional<Answer> existingAnswerOptional = answerRepository.findByQuestionAndUser(question, user);
-                
-                Answer answer;
-                if (existingAnswerOptional.isPresent()) {
-                    // 更新现有答案
-                    answer = existingAnswerOptional.get();
-                    answer.setContent(content);
-                    answer.setUpdatedAt(LocalDateTime.now());
-                } else {
-                    // 创建新答案
-                    answer = new Answer(content, question, user);
-                }
-                
-                answerRepository.save(answer);
-                return ResponseEntity.ok("保存成功");
+            if (!userOptional.isPresent()) {
+                return ResponseEntity.badRequest().body("用户不存在: " + username);
             }
             
-            return ResponseEntity.badRequest().body("用户或题目不存在");
+            // 验证题目是否存在
+            Optional<Question> questionOptional = questionRepository.findById(questionId);
+            if (!questionOptional.isPresent()) {
+                return ResponseEntity.badRequest().body("题目不存在: " + questionId);
+            }
+            
+            User user = userOptional.get();
+            Question question = questionOptional.get();
+            
+            // 查找现有答案
+            Optional<Answer> existingAnswerOptional = answerRepository.findByQuestionAndUser(question, user);
+            
+            Answer answer;
+            boolean isUpdate = existingAnswerOptional.isPresent();
+            
+            if (isUpdate) {
+                // 更新现有答案
+                answer = existingAnswerOptional.get();
+                answer.setContent(content);
+                answer.setUpdatedAt(LocalDateTime.now());
+            } else {
+                // 创建新答案
+                answer = new Answer(content, question, user);
+            }
+            
+            answerRepository.save(answer);
+            
+            String message = isUpdate ? "答案更新成功" : "答案保存成功";
+            return ResponseEntity.ok(message);
+            
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("保存失败: " + e.getMessage());
+        }
+    }
+    
+    @GetMapping("/quiz/stats/{username}")
+    @ResponseBody
+    public ResponseEntity<String> getUserStats(@PathVariable String username) {
+        try {
+            Optional<User> userOptional = userRepository.findByUsername(username);
+            if (!userOptional.isPresent()) {
+                return ResponseEntity.badRequest().body("用户不存在: " + username);
+            }
+            
+            User user = userOptional.get();
+            List<Answer> answers = answerRepository.findByUser(user);
+            
+            int totalAnswers = answers.size();
+            int answeredQuestions = (int) answers.stream()
+                .filter(answer -> answer.getContent() != null && !answer.getContent().trim().isEmpty())
+                .count();
+            
+            String stats = String.format("用户 %s 的答题统计：总共答题 %d 道，有效答案 %d 道", 
+                username, totalAnswers, answeredQuestions);
+            
+            return ResponseEntity.ok(stats);
+            
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("获取统计信息失败: " + e.getMessage());
         }
     }
 }

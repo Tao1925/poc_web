@@ -68,7 +68,7 @@ class QuizLoginDemoApplicationIntegrationTest {
                 .param("username", "admin")
                 .param("password", "123456"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/welcome?username=admin"));
+                .andExpect(redirectedUrl("/quiz?username=admin"));
     }
 
     @Test
@@ -132,7 +132,7 @@ class QuizLoginDemoApplicationIntegrationTest {
                 .param("username", "admin")
                 .param("password", "123456"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/welcome?username=admin"));
+                .andExpect(redirectedUrl("/quiz?username=admin"));
 
         // 3. 访问欢迎页面
         mockMvc.perform(get("/welcome")
