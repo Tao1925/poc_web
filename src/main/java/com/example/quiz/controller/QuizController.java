@@ -1,5 +1,6 @@
 package com.example.quiz.controller;
 
+import com.example.quiz.dto.QuestionDTO;
 import com.example.quiz.model.*;
 import com.example.quiz.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,10 +50,20 @@ public class QuizController {
     
     @GetMapping("/quiz/question/{questionId}")
     @ResponseBody
-    public ResponseEntity<Question> getQuestion(@PathVariable Long questionId, @RequestParam String username) {
+    public ResponseEntity<QuestionDTO> getQuestion(@PathVariable Long questionId, @RequestParam String username) {
         Optional<Question> questionOptional = questionRepository.findById(questionId);
         if (questionOptional.isPresent()) {
-            return ResponseEntity.ok(questionOptional.get());
+            Question question = questionOptional.get();
+            QuestionDTO questionDTO = new QuestionDTO(
+                question.getId(),
+                question.getTitle(),
+                question.getDescription(),
+                question.getQuestionNumber(),
+                question.getSortOrder(),
+                question.getChapter().getId(),
+                question.getChapter().getTitle()
+            );
+            return ResponseEntity.ok(questionDTO);
         }
         return ResponseEntity.notFound().build();
     }

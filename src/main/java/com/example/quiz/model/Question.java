@@ -1,5 +1,6 @@
 package com.example.quiz.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -28,6 +29,7 @@ public class Question {
     private Chapter chapter;
     
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Answer> answers;
     
     // 默认构造函数
