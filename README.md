@@ -22,6 +22,7 @@ mvn spring-boot:run
 - ✅ **多用户支持**：不同用户数据独立存储
 - ✅ **自动初始化**：启动时自动创建表和数据
 - ✅ **H2 控制台**：可视化数据库管理
+- ✅ **图片上传**：本地文件选择，支持 Windows/Mac
 
 ## 数据存储
 
@@ -32,20 +33,36 @@ mvn spring-boot:run
 ## 验证脚本
 
 ```bash
+# 验证数据持久化
 ./ai_script/verify_persistence.sh
+
+# 测试图片上传功能（前端检查）
+./ai_script/test_image_upload.sh
+
+# 测试图片保存功能（后端检查）
+./ai_script/test_image_save.sh
 ```
 
 ## 重要说明
 
-首次使用或数据库为空时：
+### 首次使用或数据库为空时：
 ```bash
+rm -rf ./data
+mvn spring-boot:run
+```
+
+### 升级后重建数据库（修复字段类型）：
+如果遇到图片上传失败（HTTP 500），需要重建数据库：
+```bash
+pkill -f spring-boot
 rm -rf ./data
 mvn spring-boot:run
 ```
 
 ## 文档
 
-详见：`ai_process_md/数据库持久化完整解决方案_20251025_2152.md`
+- `ai_process_md/图片上传功能优化_20251025_2222.md` - 图片上传功能实现
+- `ai_process_md/修复图片上传500错误_20251025_2232.md` - HTTP 500 错误修复
 
 ## 测试状态
 
@@ -55,6 +72,7 @@ mvn spring-boot:run
 - 答题保存功能正常
 - 数据持久化保存
 - 重启后数据不丢失
+- 图片上传功能（本地文件选择）
 
 ## 项目规范
 

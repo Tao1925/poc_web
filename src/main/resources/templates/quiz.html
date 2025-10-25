@@ -273,6 +273,7 @@
                     <button onclick="formatText('underline')" title="下划线">U</button>
                     <button onclick="insertImage()" title="插入图片">📷</button>
                     <button onclick="clearFormat()" title="清除格式">清除格式</button>
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
                 </div>
                 
                 <div id="answer-editor" 
@@ -463,13 +464,84 @@
             document.getElementById('answer-editor').focus();
         }
         
-        // 插入图片
+        // 插入图片 - 打开文件选择对话框
         function insertImage() {
-            const url = prompt('请输入图片URL:');
-            if (url) {
-                document.execCommand('insertImage', false, url);
-                document.getElementById('answer-editor').focus();
+            document.getElementById('imageInput').click();
+        }
+        
+        // 处理图片上传
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
             }
+            
+            // 检查文件类型
+            if (!file.type.startsWith('image/')) {
+                alert('请选择图片文件！');
+                return;
+            }
+            
+            // 检查文件大小（限制5MB）
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                alert('图片文件过大！请选择小于5MB的图片。');
+                return;
+            }
+            
+            // 显示加载状态
+            showSaveStatus('saving', '正在上传图片...');
+            
+            // 读取文件并转换为Base64
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Image = e.target.result;
+                
+                // 插入图片到编辑器
+                const img = document.createElement('img');
+                img.src = base64Image;
+                img.style.maxWidth = '100%';
+                img.style.height = 'auto';
+                img.style.margin = '10px 0';
+                
+                // 获取编辑器和当前选区
+                const editor = document.getElementById('answer-editor');
+                editor.focus();
+                
+                // 插入图片
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    range.deleteContents();
+                    range.insertNode(img);
+                    
+                    // 在图片后添加一个换行
+                    const br = document.createElement('br');
+                    range.collapse(false);
+                    range.insertNode(br);
+                    range.setStartAfter(br);
+                    range.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                } else {
+                    editor.appendChild(img);
+                    editor.appendChild(document.createElement('br'));
+                }
+                
+                showSaveStatus('success', '图片上传成功！');
+                
+                // 触发自动保存
+                editor.dispatchEvent(new Event('input', { bubbles: true }));
+            };
+            
+            reader.onerror = function() {
+                showSaveStatus('error', '读取图片文件失败！');
+            };
+            
+            reader.readAsDataURL(file);
+            
+            // 清空input，允许重复选择同一文件
+            event.target.value = '';
         }
         
         // 清除格式

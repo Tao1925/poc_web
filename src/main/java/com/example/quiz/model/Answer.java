@@ -12,7 +12,7 @@ public class Answer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(length = 5000)
+    @Column(columnDefinition = "TEXT")
     private String content;
     
     @Column(name = "created_at")
