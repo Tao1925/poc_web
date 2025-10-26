@@ -67,6 +67,7 @@ public class GradingController {
                 map.put("username", answer.getUser().getUsername());
                 map.put("content", answer.getContent());
                 map.put("score", answer.getScore());
+                map.put("remark", answer.getRemark());  // 添加备注字段
                 map.put("totalScore", question.getTotalScore());
                 map.put("createdAt", answer.getCreatedAt());
                 map.put("updatedAt", answer.getUpdatedAt());
@@ -80,7 +81,8 @@ public class GradingController {
     @PostMapping("/grading/updateScore")
     @ResponseBody
     public ResponseEntity<String> updateScore(@RequestParam Long answerId, 
-                                             @RequestParam Double score) {
+                                             @RequestParam Double score,
+                                             @RequestParam(required = false) String remark) {
         try {
             Optional<Answer> answerOptional = answerRepository.findById(answerId);
             if (!answerOptional.isPresent()) {
@@ -96,6 +98,7 @@ public class GradingController {
             }
             
             answer.setScore(score);
+            answer.setRemark(remark);  // 更新备注
             answerRepository.save(answer);
             
             return ResponseEntity.ok("评分成功");

@@ -24,6 +24,7 @@ mvn spring-boot:run
 - ✅ **H2 控制台**：可视化数据库管理
 - ✅ **图片上传**：本地文件选择，支持 Windows/Mac
 - ✅ **后台判题**：admin 用户可查看和评分学生答案
+- ✅ **评分备注**：admin 可为每个答案添加评分备注
 
 ## 数据存储
 
@@ -48,6 +49,9 @@ mvn spring-boot:run
 
 # 测试判题系统功能
 ./ai_script/test_grading_system.sh
+
+# 测试备注功能
+./ai_script/test_remark_function.sh
 ```
 
 ## 重要说明
@@ -71,6 +75,7 @@ mvn spring-boot:run
 - `ai_process_md/图片上传功能优化_20251025_2222.md` - 图片上传功能实现
 - `ai_process_md/修复图片上传500错误_20251025_2232.md` - HTTP 500 错误修复
 - `ai_process_md/后台判题系统开发_20251026_1123.md` - 后台判题系统开发
+- `ai_process_md/增加备注字段功能_20251026_1135.md` - 增加备注字段功能
 
 ## 测试状态
 
@@ -81,7 +86,7 @@ mvn spring-boot:run
 - 数据持久化保存
 - 重启后数据不丢失
 - 图片上传功能（本地文件选择）
-- 后台判题功能（查看答案、评分）
+- 后台判题功能（查看答案、评分、备注）
 
 ## 项目规范
 

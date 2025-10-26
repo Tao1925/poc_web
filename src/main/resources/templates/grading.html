@@ -184,6 +184,14 @@
             text-align: center;
         }
         
+        .remark-input {
+            width: 200px;
+            padding: 5px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
         .total-score {
             color: #666;
             font-size: 14px;
@@ -382,6 +390,12 @@
                                            step="0.5"
                                            placeholder="0">
                                     <span class="total-score">/ ${answer.totalScore} 分</span>
+                                    <label style="margin-left: 15px;">备注：</label>
+                                    <input type="text" 
+                                           class="remark-input" 
+                                           id="remark-${answer.answerId}"
+                                           value="${answer.remark || ''}" 
+                                           placeholder="输入备注">
                                     <button class="save-score-btn" 
                                             onclick="saveScore(${answer.answerId}, ${answer.totalScore})">
                                         保存
@@ -402,10 +416,12 @@
                 });
         }
         
-        // 保存分数
+        // 保存分数和备注
         function saveScore(answerId, totalScore) {
             const scoreInput = document.getElementById(`score-${answerId}`);
+            const remarkInput = document.getElementById(`remark-${answerId}`);
             const score = parseFloat(scoreInput.value);
+            const remark = remarkInput.value;
             
             if (isNaN(score) || score < 0) {
                 showStatus('error', '请输入有效的分数');
@@ -420,6 +436,7 @@
             const formData = new FormData();
             formData.append('answerId', answerId);
             formData.append('score', score);
+            formData.append('remark', remark);
             
             fetch('/grading/updateScore', {
                 method: 'POST',
@@ -434,8 +451,8 @@
                 }
             })
             .catch(error => {
-                console.error('保存分数失败:', error);
-                showStatus('error', '保存分数失败: ' + error.message);
+                console.error('保存失败:', error);
+                showStatus('error', '保存失败: ' + error.message);
             });
         }
         

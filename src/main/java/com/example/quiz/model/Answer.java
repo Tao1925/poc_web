@@ -18,6 +18,9 @@ public class Answer {
     @Column(name = "score")
     private Double score;  // 该用户这道题得的分数
     
+    @Column(name = "remark", length = 500)
+    private String remark;  // 管理员备注
+    
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     
@@ -112,6 +115,14 @@ public class Answer {
     
     public void setScore(Double score) {
         this.score = score;
+    }
+    
+    public String getRemark() {
+        return remark;
+    }
+    
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
     
     @Override
