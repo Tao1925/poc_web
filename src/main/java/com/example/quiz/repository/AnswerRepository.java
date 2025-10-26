@@ -20,4 +20,6 @@ public interface AnswerRepository extends JpaRepository<Answer, Long> {
     Optional<Answer> findByQuestionIdAndUserId(@Param("questionId") Long questionId, @Param("userId") Long userId);
     
     List<Answer> findByUser(User user);
+    
+    List<Answer> findByQuestion(Question question);
 }

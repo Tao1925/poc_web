@@ -15,6 +15,9 @@ public class Answer {
     @Column(columnDefinition = "TEXT")
     private String content;
     
+    @Column(name = "score")
+    private Double score;  // 该用户这道题得的分数
+    
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     
@@ -101,6 +104,14 @@ public class Answer {
     
     public void setUser(User user) {
         this.user = user;
+    }
+    
+    public Double getScore() {
+        return score;
+    }
+    
+    public void setScore(Double score) {
+        this.score = score;
     }
     
     @Override

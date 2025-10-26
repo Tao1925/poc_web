@@ -34,8 +34,14 @@ public class LoginController {
             User user = userOptional.get();
             // 验证密码（这里简单比较，实际项目中应该使用加密）
             if (password.equals(user.getPassword())) {
-                // 登录成功，重定向到答题页面
-                return "redirect:/quiz?username=" + username;
+                // 登录成功，根据用户类型跳转不同页面
+                if ("admin".equals(username)) {
+                    // admin用户跳转到判题界面
+                    return "redirect:/grading?username=" + username;
+                } else {
+                    // 普通用户跳转到答题页面
+                    return "redirect:/quiz?username=" + username;
+                }
             } else {
                 // 密码错误
                 model.addAttribute("error", "密码错误");

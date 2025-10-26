@@ -11,9 +11,9 @@ mvn spring-boot:run
 访问：http://localhost:8080/
 
 测试账号：
-- `admin` / `123456`
-- `student1` / `student123`
-- `teacher` / `teacher123`
+- `admin` / `123456` - 管理员（判题界面）
+- `student1` / `student123` - 学生（答题界面）
+- `teacher` / `teacher123` - 教师（答题界面）
 
 ## 功能特性
 
@@ -23,6 +23,7 @@ mvn spring-boot:run
 - ✅ **自动初始化**：启动时自动创建表和数据
 - ✅ **H2 控制台**：可视化数据库管理
 - ✅ **图片上传**：本地文件选择，支持 Windows/Mac
+- ✅ **后台判题**：admin 用户可查看和评分学生答案
 
 ## 数据存储
 
@@ -41,6 +42,12 @@ mvn spring-boot:run
 
 # 测试图片保存功能（后端检查）
 ./ai_script/test_image_save.sh
+
+# 生成判题系统测试数据
+./ai_script/generate_test_data.sh
+
+# 测试判题系统功能
+./ai_script/test_grading_system.sh
 ```
 
 ## 重要说明
@@ -63,16 +70,18 @@ mvn spring-boot:run
 
 - `ai_process_md/图片上传功能优化_20251025_2222.md` - 图片上传功能实现
 - `ai_process_md/修复图片上传500错误_20251025_2232.md` - HTTP 500 错误修复
+- `ai_process_md/后台判题系统开发_20251026_1123.md` - 后台判题系统开发
 
 ## 测试状态
 
 ✅ 所有功能已测试通过：
 - 数据自动加载（用户、章节、题目）
-- 登录功能正常
+- 登录功能正常（admin跳转判题，学生跳转答题）
 - 答题保存功能正常
 - 数据持久化保存
 - 重启后数据不丢失
 - 图片上传功能（本地文件选择）
+- 后台判题功能（查看答案、评分）
 
 ## 项目规范
 

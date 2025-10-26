@@ -1,6 +1,5 @@
 package com.example.quiz.controller;
 
-import com.example.quiz.dto.QuestionDTO;
 import com.example.quiz.model.*;
 import com.example.quiz.repository.*;
 import org.junit.jupiter.api.BeforeEach;

@@ -24,6 +24,9 @@ public class Question {
     @Column(name = "sort_order")
     private Integer sortOrder;
     
+    @Column(name = "total_score")
+    private Double totalScore;  // 这道题的总分
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chapter_id", nullable = false)
     private Chapter chapter;
@@ -99,6 +102,14 @@ public class Question {
     
     public void setAnswers(List<Answer> answers) {
         this.answers = answers;
+    }
+    
+    public Double getTotalScore() {
+        return totalScore;
+    }
+    
+    public void setTotalScore(Double totalScore) {
+        this.totalScore = totalScore;
     }
     
     @Override

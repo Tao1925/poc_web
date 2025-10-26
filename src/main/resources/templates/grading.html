@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台判题系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: #f5f5f5;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .grading-container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        /* 左侧目录区域 */
+        .sidebar {
+            width: 15%;
+            background-color: #2c3e50;
+            color: white;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+        
+        .sidebar h3 {
+            padding: 0 20px 15px;
+            border-bottom: 1px solid #34495e;
+            margin-bottom: 15px;
+            color: #ecf0f1;
+        }
+        
+        .chapter {
+            margin-bottom: 10px;
+        }
+        
+        .chapter-title {
+            padding: 10px 20px;
+            background-color: #34495e;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .chapter-title:hover {
+            background-color: #4a5f7a;
+        }
+        
+        .chapter-title.active {
+            background-color: #e74c3c;
+        }
+        
+        .questions-list {
+            display: none;
+            background-color: #34495e;
+        }
+        
+        .questions-list.show {
+            display: block;
+        }
+        
+        .question-item {
+            padding: 8px 20px 8px 40px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border-left: 3px solid transparent;
+        }
+        
+        .question-item:hover {
+            background-color: #4a5f7a;
+        }
+        
+        .question-item.active {
+            background-color: #e74c3c;
+            border-left-color: #ecf0f1;
+        }
+        
+        /* 右侧内容区域 */
+        .main-content {
+            width: 85%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 题目说明区域 */
+        .question-section {
+            height: 20%;
+            background-color: white;
+            padding: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            overflow-y: auto;
+        }
+        
+        .question-title {
+            font-size: 1.5em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .question-description {
+            color: #555;
+            line-height: 1.6;
+            font-size: 1.1em;
+        }
+        
+        .no-question {
+            text-align: center;
+            color: #999;
+            font-size: 1.2em;
+            margin-top: 50px;
+        }
+        
+        /* 学生答案区域 */
+        .answers-section {
+            height: 80%;
+            background-color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .section-title {
+            font-size: 1.3em;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .answers-container {
+            flex: 1;
+            overflow-y: auto;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #fafafa;
+        }
+        
+        .answer-card {
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .answer-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .student-name {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+        
+        .score-input-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .score-input {
+            width: 60px;
+            padding: 5px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .total-score {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .save-score-btn {
+            padding: 5px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .save-score-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .answer-content {
+            color: #333;
+            line-height: 1.6;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            min-height: 100px;
+        }
+        
+        .answer-content img {
+            max-width: 100%;
+            height: auto;
+            margin: 10px 0;
+        }
+        
+        .no-answers {
+            text-align: center;
+            color: #999;
+            font-size: 1.1em;
+            padding: 50px 0;
+        }
+        
+        .status-message {
+            margin-top: 10px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .status-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .answer-meta {
+            font-size: 12px;
+            color: #999;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="grading-container">
+        <!-- 左侧目录 -->
+        <div class="sidebar">
+            <h3>📋 判题目录</h3>
+            <div th:each="chapter : ${chapters}" class="chapter">
+                <div class="chapter-title" th:onclick="toggleChapter(this)" th:text="${chapter.title}">
+                    章节标题
+                </div>
+                <div class="questions-list" th:id="'questions-' + ${chapter.id}">
+                    <div th:each="question : ${chapter.questions}" 
+                         class="question-item" 
+                         th:data-question-id="${question.id}"
+                         th:onclick="selectQuestion(this)"
+                         th:text="${question.questionNumber + '. ' + question.title}">
+                        题目
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 右侧内容区域 -->
+        <div class="main-content">
+            <!-- 题目说明区域 -->
+            <div class="question-section">
+                <div id="question-content">
+                    <div class="no-question">
+                        请从左侧选择题目开始判题
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 学生答案区域 -->
+            <div class="answers-section">
+                <div class="section-title">👥 学生答案</div>
+                <div id="answers-container" class="answers-container">
+                    <div class="no-answers">
+                        请先选择题目
+                    </div>
+                </div>
+                <div id="status-message" class="status-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestionId = null;
+        let currentUsername = '[[${username}]]';
+        
+        // 切换章节显示
+        function toggleChapter(element) {
+            const chapterId = element.nextElementSibling.id.split('-')[1];
+            const questionsList = document.getElementById('questions-' + chapterId);
+            
+            // 切换显示状态
+            if (questionsList.classList.contains('show')) {
+                questionsList.classList.remove('show');
+                element.classList.remove('active');
+            } else {
+                questionsList.classList.add('show');
+                element.classList.add('active');
+            }
+        }
+        
+        // 选择题目
+        function selectQuestion(element) {
+            // 移除所有题目的active状态
+            document.querySelectorAll('.question-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // 添加当前题目的active状态
+            element.classList.add('active');
+            
+            // 获取题目ID
+            const questionId = element.getAttribute('data-question-id');
+            currentQuestionId = questionId;
+            
+            // 加载题目内容
+            loadQuestion(questionId);
+            
+            // 加载学生答案
+            loadAnswers(questionId);
+        }
+        
+        // 加载题目内容
+        function loadQuestion(questionId) {
+            fetch(`/quiz/question/${questionId}?username=${currentUsername}`)
+                .then(response => response.json())
+                .then(question => {
+                    const questionContent = document.getElementById('question-content');
+                    questionContent.innerHTML = `
+                        <div class="question-title">${question.questionNumber}. ${question.title}</div>
+                        <div class="question-description">${question.description}</div>
+                    `;
+                })
+                .catch(error => {
+                    console.error('加载题目失败:', error);
+                    showStatus('error', '加载题目失败: ' + error.message);
+                });
+        }
+        
+        // 加载学生答案
+        function loadAnswers(questionId) {
+            fetch(`/grading/question/${questionId}/answers`)
+                .then(response => response.json())
+                .then(answers => {
+                    const container = document.getElementById('answers-container');
+                    
+                    if (answers.length === 0) {
+                        container.innerHTML = '<div class="no-answers">暂无学生提交答案</div>';
+                        return;
+                    }
+                    
+                    container.innerHTML = answers.map(answer => `
+                        <div class="answer-card">
+                            <div class="answer-header">
+                                <span class="student-name">👤 ${answer.username}</span>
+                                <div class="score-input-group">
+                                    <label>得分：</label>
+                                    <input type="number" 
+                                           class="score-input" 
+                                           id="score-${answer.answerId}"
+                                           value="${answer.score || ''}" 
+                                           min="0" 
+                                           max="${answer.totalScore}"
+                                           step="0.5"
+                                           placeholder="0">
+                                    <span class="total-score">/ ${answer.totalScore} 分</span>
+                                    <button class="save-score-btn" 
+                                            onclick="saveScore(${answer.answerId}, ${answer.totalScore})">
+                                        保存
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="answer-content">${answer.content}</div>
+                            <div class="answer-meta">
+                                提交时间: ${new Date(answer.createdAt).toLocaleString('zh-CN')} | 
+                                更新时间: ${new Date(answer.updatedAt).toLocaleString('zh-CN')}
+                            </div>
+                        </div>
+                    `).join('');
+                })
+                .catch(error => {
+                    console.error('加载答案失败:', error);
+                    showStatus('error', '加载答案失败: ' + error.message);
+                });
+        }
+        
+        // 保存分数
+        function saveScore(answerId, totalScore) {
+            const scoreInput = document.getElementById(`score-${answerId}`);
+            const score = parseFloat(scoreInput.value);
+            
+            if (isNaN(score) || score < 0) {
+                showStatus('error', '请输入有效的分数');
+                return;
+            }
+            
+            if (score > totalScore) {
+                showStatus('error', `得分不能超过总分 ${totalScore}`);
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('answerId', answerId);
+            formData.append('score', score);
+            
+            fetch('/grading/updateScore', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result.includes('成功')) {
+                    showStatus('success', result);
+                } else {
+                    showStatus('error', result);
+                }
+            })
+            .catch(error => {
+                console.error('保存分数失败:', error);
+                showStatus('error', '保存分数失败: ' + error.message);
+            });
+        }
+        
+        // 显示状态消息
+        function showStatus(type, message) {
+            const statusElement = document.getElementById('status-message');
+            statusElement.className = `status-message ${type}`;
+            statusElement.textContent = message;
+            statusElement.style.display = 'block';
+            
+            // 3秒后隐藏
+            setTimeout(() => {
+                statusElement.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('判题系统已加载，当前用户:', currentUsername);
+        });
+    </script>
+</body>
+</html>
+
