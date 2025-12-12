@@ -259,6 +259,26 @@
             color: #999;
             margin-top: 10px;
         }
+
+        .export-action {
+            position: fixed;
+            left: 20px;
+            bottom: 20px;
+        }
+
+        .export-btn {
+            padding: 8px 16px;
+            background-color: #e67e22;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .export-btn:hover {
+            background-color: #d35400;
+        }
     </style>
 </head>
 <body>
@@ -304,6 +324,10 @@
                 <div id="status-message" class="status-message"></div>
             </div>
         </div>
+    </div>
+
+    <div class="export-action">
+        <button class="export-btn" onclick="exportAnswers()">导出答题数据</button>
     </div>
 
     <script>
@@ -473,7 +497,51 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('判题系统已加载，当前用户:', currentUsername);
         });
+
+        async function exportAnswers() {
+            if (currentUsername !== 'admin') {
+                showStatus('error', '仅管理员可导出');
+                return;
+            }
+            try {
+                showStatus('success', '开始导出...');
+                const res = await fetch(`/grading/export?username=${currentUsername}`);
+                if (!res.ok) {
+                    const t = await res.text();
+                    showStatus('error', t || '导出失败');
+                    return;
+                }
+                const blob = await res.blob();
+                const now = new Date();
+                const y = String(now.getFullYear()).slice(-2);
+                const m = String(now.getMonth() + 1).padStart(2, '0');
+                const d = String(now.getDate()).padStart(2, '0');
+                const filename = `poc_answer_${y}${m}${d}.zip`;
+
+                if (window.showSaveFilePicker) {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: filename,
+                        types: [{ description: 'ZIP', accept: { 'application/zip': ['.zip'] } }]
+                    });
+                    const writable = await handle.createWritable();
+                    await writable.write(blob);
+                    await writable.close();
+                    showStatus('success', '导出完成');
+                } else {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                    showStatus('success', '导出完成');
+                }
+            } catch (e) {
+                showStatus('error', '导出失败: ' + e.message);
+            }
+        }
     </script>
 </body>
 </html>
-

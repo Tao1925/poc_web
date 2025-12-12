@@ -32,6 +32,26 @@ mvn spring-boot:run
 - **类型**: H2 文件数据库
 - **持久化**: ✅ 是
 
+## 数据库访问
+
+- Web 控制台（推荐）
+  - 启动应用：`mvn spring-boot:run`
+  - 打开：`http://localhost:8080/h2-console`
+  - 配置参数：
+    - JDBC URL：`jdbc:h2:file:./data/pocdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE`
+    - Driver Class：`org.h2.Driver`
+    - Username：`sa`
+    - Password：留空
+  - 点击 Connect 即可浏览与执行 SQL
+
+- IDE 连接（IntelliJ IDEA/Datagrip 等）
+  - 新建数据源选择 `H2 (Embedded)`
+  - URL：`jdbc:h2:file:/Users/mac/IdeaProjects/poc_web/data/pocdb`
+    - 或使用上面的 JDBC URL（相对路径）
+  - 用户名：`sa`，密码：留空
+  - 注意：如果使用外部工具连接，建议先停止运行中的应用以避免文件锁
+
+
 ## 验证脚本
 
 ```bash
