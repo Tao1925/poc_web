@@ -56,7 +56,7 @@ class LoginControllerTest {
         String result = loginController.login("admin", "123456", model);
 
         // 验证结果
-        assertEquals("redirect:/quiz?username=admin", result);
+        assertEquals("redirect:/grading?username=admin", result);
         verify(userRepository).findByUsername("admin");
         verify(model, never()).addAttribute(anyString(), any());
     }

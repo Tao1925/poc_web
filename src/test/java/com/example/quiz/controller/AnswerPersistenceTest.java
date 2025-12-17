@@ -28,7 +28,8 @@ import static org.hamcrest.Matchers.containsString;
 @AutoConfigureWebMvc
 @TestPropertySource(properties = {
     "spring.datasource.url=jdbc:h2:mem:testdb",
-    "spring.jpa.hibernate.ddl-auto=create-drop"
+    "spring.jpa.hibernate.ddl-auto=create-drop",
+    "app.data-sync.enabled=false"
 })
 @Transactional
 class AnswerPersistenceTest {

@@ -40,4 +40,12 @@
 - 导出的文件是由每个用户的HTML文件组成的压缩包，压缩包名是poc_answer_{yymmdd}.zip，其中{yymmdd}是当前日期
 - 点击导出之后，用户可以选择其要保存的目录
 
+首先请你将每次的关于程序修改的内容说明形成一份md文档，生成到ai_process_md中，文档名中要包含当前的时间，精确到分钟，具体是{本次修改的主题}_{yyyymmdd}_{hhmm}.md，其中第一个八位数为年月时，后一个四位数为时分。
 
+我想使用一个data.json文件来代替data.sql中的内容，文件应保存到/src/main/resources目录下
+ - 这个json文件中首先包含了所有用户的账号密码的信息
+ - 接着这个文件包含了所有chapter的信息，需要注意的是，这里只需要有chapter的一个title字段就可以了，并不需要description和sort_order字段，sort_order字段在后续处理时根据json中章节的顺序来确定
+ - 每个章节中，应包含其对应的question信息，需要填入question的title,description和total_score字段，不需要别的字段信息，question_number根据json中chapter的序数和question的序数来确定，如果是第三个章节的第二个问题，那么question_number为'3.2', chapter_id根据其所属的章节来来进行判定
+以下是程序改造需求
+ - 在加载程序时，需要从data.json文件中读取数据，并将其加载到数据库中,应能完美替代data.sql中的功能
+ - 应用每次启动之后，都应保证数据库中的User，Chapter，Question表中的数据与data.json文件中的数据完全一致

@@ -27,7 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureWebMvc
 @TestPropertySource(properties = {
     "spring.datasource.url=jdbc:h2:mem:testdb",
-    "spring.jpa.hibernate.ddl-auto=create-drop"
+    "spring.jpa.hibernate.ddl-auto=create-drop",
+    "app.data-sync.enabled=false"
 })
 @Transactional
 class QuizLoginDemoApplicationIntegrationTest {
@@ -68,7 +69,7 @@ class QuizLoginDemoApplicationIntegrationTest {
                 .param("username", "admin")
                 .param("password", "123456"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/quiz?username=admin"));
+                .andExpect(redirectedUrl("/grading?username=admin"));
     }
 
     @Test
@@ -132,7 +133,7 @@ class QuizLoginDemoApplicationIntegrationTest {
                 .param("username", "admin")
                 .param("password", "123456"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/quiz?username=admin"));
+                .andExpect(redirectedUrl("/grading?username=admin"));
 
         // 3. 访问欢迎页面
         mockMvc.perform(get("/welcome")
