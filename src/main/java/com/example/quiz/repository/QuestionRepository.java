@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, Long> {
@@ -16,4 +17,6 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     
     @Query("SELECT q FROM Question q ORDER BY q.chapter.sortOrder ASC, q.sortOrder ASC")
     List<Question> findAllOrderByChapterAndSortOrder();
+
+    Optional<Question> findByTitle(String title);
 }

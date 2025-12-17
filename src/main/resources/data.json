@@ -16,11 +16,6 @@
           "total_score": 10.0
         },
         {
-          "title": "控制结构",
-          "description": "请解释Java中的if-else语句、switch语句和循环语句的使用方法，并给出相应的代码示例。",
-          "total_score": 15.0
-        },
-        {
           "title": "数组操作",
           "description": "请说明Java中数组的声明、初始化和常用操作方法，并编写一个数组排序的程序。",
           "total_score": 20.0
@@ -30,6 +25,11 @@
     {
       "title": "第二章：面向对象编程",
       "questions": [
+        {
+          "title": "List集合",
+          "description": "请比较ArrayList和LinkedList的特点，并说明在什么情况下应该选择哪种实现。",
+          "total_score": 15.0
+        },
         {
           "title": "类的定义",
           "description": "请设计一个学生类(Student)，包含姓名、年龄、学号等属性，并提供相应的构造方法和getter/setter方法。",
@@ -50,11 +50,7 @@
     {
       "title": "第三章：集合框架",
       "questions": [
-        {
-          "title": "List集合",
-          "description": "请比较ArrayList和LinkedList的特点，并说明在什么情况下应该选择哪种实现。",
-          "total_score": 15.0
-        },
+        
         {
           "title": "Map集合",
           "description": "请说明HashMap和TreeMap的区别，并编写代码演示它们的使用方法。",

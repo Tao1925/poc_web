@@ -22,4 +22,6 @@ public interface AnswerRepository extends JpaRepository<Answer, Long> {
     List<Answer> findByUser(User user);
     
     List<Answer> findByQuestion(Question question);
+
+    Optional<Answer> findByQuestion_TitleAndUser(String title, User user);
 }

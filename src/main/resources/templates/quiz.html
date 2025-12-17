@@ -47,7 +47,7 @@
             <div th:each="chapter : ${chapters}" class="chapter">
                 <div class="chapter-title" th:onclick="toggleChapter(this)" th:text="${chapter.title}">章节标题</div>
                 <div class="questions-list" th:id="'questions-' + ${chapter.id}">
-                    <div th:each="question : ${chapter.questions}" class="question-item" th:data-question-id="${question.id}" th:onclick="selectQuestion(this)" th:text="${question.questionNumber + '. ' + question.title}">题目</div>
+                    <div th:each="question : ${chapter.questions}" class="question-item" th:data-question-id="${question.id}" th:data-question-title="${question.title}" th:onclick="selectQuestion(this)" th:text="${question.questionNumber + '. ' + question.title}">题目</div>
                 </div>
             </div>
         </div>
@@ -75,6 +75,7 @@
 
     <script>
         let currentQuestionId = null;
+        let currentQuestionTitle = null;
         let currentUsername = '[[${username}]]';
         let saveTimeout = null;
 
@@ -88,14 +89,16 @@
 
         function selectQuestion(element) {
             const questionId = element.dataset.questionId;
+            const questionTitle = element.dataset.questionTitle;
             document.querySelectorAll('.question-item').forEach(item => { item.classList.remove('active'); });
             element.classList.add('active');
-            loadQuestion(questionId);
-            loadAnswer(questionId);
+            loadQuestion(questionId, questionTitle);
+            loadAnswer(questionId, questionTitle);
         }
 
-        function loadQuestion(questionId) {
+        function loadQuestion(questionId, questionTitle) {
             currentQuestionId = questionId;
+            currentQuestionTitle = questionTitle;
             fetch(`/quiz/question/${questionId}?username=${currentUsername}`)
                 .then(response => response.json())
                 .then(question => {
@@ -108,8 +111,15 @@
                 .catch(error => { console.error('加载题目失败:', error); });
         }
 
-        function loadAnswer(questionId) {
-            fetch(`/quiz/answer/${questionId}?username=${currentUsername}`)
+        function loadAnswer(questionId, questionTitle) {
+            let url = '';
+            if (questionTitle) {
+                url = `/quiz/answer?title=${encodeURIComponent(questionTitle)}&username=${currentUsername}`;
+            } else {
+                url = `/quiz/answer/${questionId}?username=${currentUsername}`;
+            }
+            
+            fetch(url)
                 .then(response => { if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); return response.json(); })
                 .then(answer => {
                     const editor = document.getElementById('answer-editor');
@@ -125,7 +135,7 @@
         }
 
         document.getElementById('answer-editor').addEventListener('input', function() {
-            if (currentQuestionId) {
+            if (currentQuestionId || currentQuestionTitle) {
                 if (saveTimeout) { clearTimeout(saveTimeout); }
                 showSaveStatus('saving', '正在保存...');
                 saveTimeout = setTimeout(() => { saveAnswer(); }, 2000);
@@ -147,12 +157,13 @@
         }
 
         async function saveAnswer() {
-            if (!currentQuestionId) { console.warn('没有选择题目，无法保存答案'); return; }
+            if (!currentQuestionId && !currentQuestionTitle) { console.warn('没有选择题目，无法保存答案'); return; }
             await normalizeImages();
             const content = document.getElementById('answer-editor').innerHTML;
             if (!content || content.trim() === '' || content === '<br>' || content === '<div><br></div>') { console.log('答案内容为空，跳过保存'); return; }
             const formData = new FormData();
-            formData.append('questionId', currentQuestionId);
+            if (currentQuestionId) formData.append('questionId', currentQuestionId);
+            if (currentQuestionTitle) formData.append('questionTitle', currentQuestionTitle);
             formData.append('content', content);
             formData.append('username', currentUsername);
             fetch('/quiz/save', { method: 'POST', body: formData })

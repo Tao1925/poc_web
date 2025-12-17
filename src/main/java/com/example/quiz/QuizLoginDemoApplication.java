@@ -110,12 +110,12 @@ public class QuizLoginDemoApplication {
                         .filter(c -> c.getSortOrder() != null)
                         .collect(Collectors.toMap(Chapter::getSortOrder, c -> c, (a, b) -> a, HashMap::new));
 
-                Map<String, Question> existingQuestionsByQuestionNumber = questionRepository.findAll().stream()
-                        .filter(q -> q.getQuestionNumber() != null && !q.getQuestionNumber().isBlank())
-                        .collect(Collectors.toMap(Question::getQuestionNumber, q -> q, (a, b) -> a, HashMap::new));
+                Map<String, Question> existingQuestionsByTitle = questionRepository.findAll().stream()
+                        .filter(q -> q.getTitle() != null && !q.getTitle().isBlank())
+                        .collect(Collectors.toMap(Question::getTitle, q -> q, (a, b) -> a, HashMap::new));
 
                 Set<Integer> desiredChapterOrders = new HashSet<>();
-                Set<String> desiredQuestionNumbers = new HashSet<>();
+                Set<String> desiredQuestionTitles = new HashSet<>();
 
                 JsonNode chaptersNode = root.path("chapters");
                 if (chaptersNode.isArray()) {
@@ -140,18 +140,19 @@ public class QuizLoginDemoApplication {
                             for (JsonNode q : questionsNode) {
                                 int questionOrder = questionIndex++;
                                 String questionNumber = chapterOrder + "." + questionOrder;
-                                desiredQuestionNumbers.add(questionNumber);
 
                                 String qTitle = q.path("title").asText("");
+                                desiredQuestionTitles.add(qTitle);
+                                
                                 String qDescription = q.path("description").asText("");
                                 double totalScore = q.path("total_score").asDouble(0.0);
 
-                                Question question = existingQuestionsByQuestionNumber.get(questionNumber);
+                                Question question = existingQuestionsByTitle.get(qTitle);
                                 if (question == null) {
                                     question = new Question();
-                                    question.setQuestionNumber(questionNumber);
+                                    question.setTitle(qTitle);
                                 }
-                                question.setTitle(qTitle);
+                                question.setQuestionNumber(questionNumber);
                                 question.setDescription(qDescription);
                                 question.setTotalScore(totalScore);
                                 question.setSortOrder(questionOrder);
@@ -163,7 +164,7 @@ public class QuizLoginDemoApplication {
                 }
 
                 List<Question> extraQuestions = questionRepository.findAll().stream()
-                        .filter(q -> q.getQuestionNumber() == null || !desiredQuestionNumbers.contains(q.getQuestionNumber()))
+                        .filter(q -> q.getTitle() == null || !desiredQuestionTitles.contains(q.getTitle()))
                         .collect(Collectors.toList());
                 if (!extraQuestions.isEmpty()) {
                     List<Answer> answersToDelete = new ArrayList<>();

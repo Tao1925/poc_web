@@ -92,10 +92,34 @@ public class QuizController {
         // 返回空答案DTO
         return ResponseEntity.ok(new AnswerDTO());
     }
+
+    @GetMapping("/quiz/answer")
+    @ResponseBody
+    public ResponseEntity<AnswerDTO> getAnswerByTitle(@RequestParam String title, @RequestParam String username) {
+        Optional<User> userOptional = userRepository.findByUsername(username);
+        if (userOptional.isPresent()) {
+            Optional<Answer> answerOptional = answerRepository.findByQuestion_TitleAndUser(title, userOptional.get());
+            if (answerOptional.isPresent()) {
+                Answer answer = answerOptional.get();
+                AnswerDTO answerDTO = new AnswerDTO(
+                        answer.getId(),
+                        answer.getContent(),
+                        answer.getCreatedAt(),
+                        answer.getUpdatedAt(),
+                        answer.getQuestion().getId(),
+                        answer.getUser().getId(),
+                        username
+                );
+                return ResponseEntity.ok(answerDTO);
+            }
+        }
+        return ResponseEntity.ok(new AnswerDTO());
+    }
     
     @PostMapping("/quiz/save")
     @ResponseBody
-    public ResponseEntity<String> saveAnswer(@RequestParam Long questionId, 
+    public ResponseEntity<String> saveAnswer(@RequestParam(required = false) Long questionId,
+                                           @RequestParam(required = false) String questionTitle,
                                            @RequestParam String content, 
                                            @RequestParam String username) {
         try {
@@ -104,11 +128,21 @@ public class QuizController {
             if (!userOptional.isPresent()) {
                 return ResponseEntity.badRequest().body("用户不存在: " + username);
             }
+
+            if (questionId == null && questionTitle == null) {
+                return ResponseEntity.badRequest().body("必须提供题目ID或题目名称");
+            }
             
             // 验证题目是否存在
-            Optional<Question> questionOptional = questionRepository.findById(questionId);
+            Optional<Question> questionOptional;
+            if (questionTitle != null && !questionTitle.isEmpty()) {
+                questionOptional = questionRepository.findByTitle(questionTitle);
+            } else {
+                questionOptional = questionRepository.findById(questionId);
+            }
+
             if (!questionOptional.isPresent()) {
-                return ResponseEntity.badRequest().body("题目不存在: " + questionId);
+                return ResponseEntity.badRequest().body("题目不存在: " + (questionTitle != null ? questionTitle : questionId));
             }
             
             User user = userOptional.get();

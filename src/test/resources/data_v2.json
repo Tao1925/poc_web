@@ -1,0 +1,16 @@
+{
+  "users": [
+    {"username": "admin", "password": "password"},
+    {"username": "user1", "password": "password"}
+  ],
+  "chapters": [
+    {
+      "title": "Chapter 1",
+      "questions": [
+        {"title": "Question C", "description": "Desc C", "total_score": 5},
+        {"title": "Question A", "description": "Desc A", "total_score": 10},
+        {"title": "Question B", "description": "Desc B", "total_score": 10}
+      ]
+    }
+  ]
+}

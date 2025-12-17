@@ -22,6 +22,7 @@ public class Chapter {
     private Integer sortOrder;
     
     @OneToMany(mappedBy = "chapter", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OrderBy("sortOrder ASC")
     @JsonIgnore
     private List<Question> questions;
     
