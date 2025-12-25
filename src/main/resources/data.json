@@ -8,78 +8,159 @@
   ],
   "chapters": [
     {
-      "title": "第一章：Java基础",
+      "title": "静态检测能力",
       "questions": [
         {
-          "title": "3322333",
-          "description": "请详细说明Java中的基本数据类型有哪些，并举例说明每种类型的取值范围和使用场景。",
+          "title": "静态文件类型支持",
+          "description": "请截图证明静态检测支持的文件类型，包括但不限于文档类文件，压缩包文件，可执行文件等",
+          "total_score": 3.0
+        },
+        {
+          "title": "检测规则自定义",
+          "description": "软件应支持常见的检测规则自定义，包括但不限于YARA规则，黑名单，白名单等，请配置自定义策略后截图证明效果",
+          "total_score": 3.0
+        },{
+          "title": "静态检测能力测试",
+          "description": "病毒样本在http://12.99.200.7/8-沙箱POC/virus_static(virus).zip中，请使用API进行静态检测，将代码和检测结果截图上传",
           "total_score": 10.0
-        },
-        {
-          "title": "数组操作",
-          "description": "请说明Java中数组的声明、初始化和常用操作方法，并编写一个数组排序的程序。",
-          "total_score": 20.0
+        },{
+          "title": "静态误杀测试",
+          "description": "TODO",
+          "total_score": 3.0
         }
       ]
     },
     {
-      "title": "第二章：面向对象编程",
+      "title": "动态检测能力",
       "questions": [
         {
-          "title": "List集合",
-          "description": "请比较ArrayList和LinkedList的特点，并说明在什么情况下应该选择哪种实现。",
-          "total_score": 15.0
+          "title": "沙箱类型",
+          "description": "软件应支持不同的沙箱，包括但不限于，主流的windows终端和服务器版本、主流的linux版本，主流的XC终端和服务器版本",
+          "total_score": 3.0
         },
         {
-          "title": "类的定义",
-          "description": "请设计一个学生类(Student)，包含姓名、年龄、学号等属性，并提供相应的构造方法和getter/setter方法。",
-          "total_score": 15.0
+          "title": "沙箱自定义",
+          "description": "请截图展示沙箱的可自定义能力",
+          "total_score": 2.0
         },
         {
-          "title": "继承关系",
-          "description": "请基于学生类创建一个研究生类(GraduateStudent)，并说明继承的优势和注意事项。",
-          "total_score": 20.0
+          "title": "逃逸检测",
+          "description": "请截图展示沙箱的反虚拟机检测技术",
+          "total_score": 2.0
         },
         {
-          "title": "多态应用",
-          "description": "请举例说明Java中多态的概念和应用场景，并编写相应的代码演示。",
-          "total_score": 25.0
+          "title": "压缩包检测",
+          "description": "请截图展示沙箱对压缩包检测能力",
+          "total_score": 3.0
+        },
+        {
+          "title": "动态检测规则自定义",
+          "description": "沙箱应支持对风险操作自定义检测规则，包括但不限于：注册表修改、进程注入、文件操作、内存修改、网络动作等",
+          "total_score": 5.0
+        },{
+          "title": "动态检测能力测试",
+          "description": "病毒样本在http://12.99.200.7/8-沙箱POC/virus_dynamic(virus).zip中，请使用API进行动态检测，将代码和检测结果截图上传",
+          "total_score": 10.0
+        },{
+          "title": "动态误杀测试",
+          "description": "TODO",
+          "total_score": 3.0
         }
       ]
     },
     {
-      "title": "第三章：集合框架",
+      "title": "检测配置",
       "questions": [
         
         {
-          "title": "Map集合",
-          "description": "请说明HashMap和TreeMap的区别，并编写代码演示它们的使用方法。",
-          "total_score": 20.0
+          "title": "API配置",
+          "description": "API应支持windows、linux、XC服务器进行调用，应支持异步和同步接口，应支持通过API进行检测策略控制",
+          "total_score": 5.0
         },
         {
-          "title": "Set集合",
-          "description": "请解释HashSet、LinkedHashSet和TreeSet的特点和适用场景。",
-          "total_score": 15.0
+          "title": "策略配置",
+          "description": "支持对扫描过程进行策略配置，包括但不限于配置进入沙箱的文件类型，文件大小，沙箱数目及类型，超时机制(静态/动态)，文件优先级配置等",
+          "total_score": 6.0
+        },
+        {
+          "title": "规则库升级",
+          "description": "支持对规则库进行升级，规则库应支持从官网下载，更新频率不低于每周一次，支持对规则库进行回退",
+          "total_score": 4.0
+        },
+        {
+          "title": "检测报告",
+          "description": "支持对检测文件出具报告，检测报告中应包含样本的进程树、行为列表、运行截图等，检测结果应支持通过syslog和kafka进行外发",
+          "total_score": 5.0
+        },
+        {
+          "title": "静态检测性能",
+          "description": "对静态检测的时间使用情况进行评估",
+          "total_score": 5.0
+        },
+        {
+          "title": "动态检测性能",
+          "description": "对动态检测的时间使用情况进行评估",
+          "total_score": 5.0
         }
       ]
     },
     {
-      "title": "第四章：异常处理",
+      "title": "非功能项",
       "questions": [
         {
-          "title": "异常分类",
-          "description": "请说明Java中Checked异常和Unchecked异常的区别，并举例说明。",
-          "total_score": 10.0
+          "title": "登陆设置功能",
+          "description": "可以设置密码复杂度、密码过期时间，登陆验证码等",
+          "total_score": 2.0
         },
         {
-          "title": "异常处理",
-          "description": "请编写代码演示try-catch-finally语句的使用，并说明finally块的作用。",
-          "total_score": 15.0
+          "title": "管理端API",
+          "description": "管理端应提供标准API接口以获取管理端数据",
+          "total_score": 2.0
         },
         {
-          "title": "自定义异常",
-          "description": "请创建一个自定义异常类，并演示如何抛出和捕获自定义异常。",
-          "total_score": 20.0
+          "title": "访问控制",
+          "description": "管理端能限制登陆IP",
+          "total_score": 2.0
+        },
+        {
+          "title": "权限管理",
+          "description": "管理端能设置管理员用户、查询用户、巡检用户等不同权限的角色",
+          "total_score": 2.0
+        },
+        {
+          "title": "系统国产化",
+          "description": "管理端应使用国产操作系统",
+          "total_score": 2.0
+        },
+        {
+          "title": "硬件国产化",
+          "description": "沙箱服务器应使用国产硬件",
+          "total_score": 2.0
+        },
+        {
+          "title": "主备部署",
+          "description": "沙箱应支持主备部署",
+          "total_score": 2.0
+        },
+        {
+          "title": "集群部署",
+          "description": "沙箱应支持集群部署",
+          "total_score": 2.0
+        },
+        {
+          "title": "日志外发",
+          "description": "应支持将系统日志通过syslog和kafka进行外发",
+          "total_score": 2.0
+        },
+        {
+          "title": "技术栈生命周期",
+          "description": "软件所使用的技术栈应符合行内的技术栈生命周期",
+          "total_score": 2.0
+        },
+        {
+          "title": "技术转移能力",
+          "description": "软件是否有配套齐全的教程和文档",
+          "total_score": 2.0
         }
       ]
     }
