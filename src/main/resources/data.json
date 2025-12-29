@@ -1,10 +1,25 @@
 {
   "users": [
-    { "username": "admin", "password": "123456" },
-    { "username": "qianxin", "password": "123456" },
-    { "username": "yaxin", "password": "123456" },
-    { "username": "360", "password": "123456" },
-    { "username": "lvmeng", "password": "123456" }
+    {
+      "username": "admin",
+      "password": "123456"
+    },
+    {
+      "username": "qianxin",
+      "password": "123456"
+    },
+    {
+      "username": "yaxin",
+      "password": "123456"
+    },
+    {
+      "username": "360",
+      "password": "123456"
+    },
+    {
+      "username": "lvmeng",
+      "password": "123456"
+    }
   ],
   "chapters": [
     {
@@ -12,18 +27,20 @@
       "questions": [
         {
           "title": "静态文件类型支持",
-          "description": "请截图证明静态检测支持的文件类型，包括但不限于文档类文件，压缩包文件，可执行文件等",
+          "description": "请截图证明静态检测支持的文件类型，截图应包括但不限于文档类文件，压缩包文件，可执行文件等。",
           "total_score": 3.0
         },
         {
           "title": "检测规则自定义",
-          "description": "软件应支持常见的检测规则自定义，包括但不限于YARA规则，黑名单，白名单等，请配置自定义策略后截图证明效果",
+          "description": "软件应支持常见的检测规则自定义，包括但不限于YARA规则，黑名单，白名单等。\n 请配置自定义策略后截图证明效果，截图应包含 \n ·检测规则配置前查杀效果 \n ·检测结果配置截图 \n ·检测结果配置后查杀效果",
           "total_score": 3.0
-        },{
+        },
+        {
           "title": "静态检测能力测试",
-          "description": "病毒样本在http://12.99.200.7/8-沙箱POC/virus_static(virus).zip中，请使用API进行静态检测，将代码和检测结果截图上传",
+          "description": "病毒样本在http://12.99.200.7/8-沙箱POC/virus_static(virus).zip中，请使用API进行静态检测，将代码和检测结果截图上传，截图应包含\n ·在linux和windows环境下，用java和另一种编程语言，分别进行API调用的代码和效果截图 \n ·管理端的查杀结果截图，并且在增加说明：XX厂商样本 yy/50 ",
           "total_score": 10.0
-        },{
+        },
+        {
           "title": "静态误杀测试",
           "description": "TODO",
           "total_score": 3.0
@@ -57,11 +74,13 @@
           "title": "动态检测规则自定义",
           "description": "沙箱应支持对风险操作自定义检测规则，包括但不限于：注册表修改、进程注入、文件操作、内存修改、网络动作等",
           "total_score": 5.0
-        },{
+        },
+        {
           "title": "动态检测能力测试",
           "description": "病毒样本在http://12.99.200.7/8-沙箱POC/virus_dynamic(virus).zip中，请使用API进行动态检测，将代码和检测结果截图上传",
           "total_score": 10.0
-        },{
+        },
+        {
           "title": "动态误杀测试",
           "description": "TODO",
           "total_score": 3.0
@@ -71,7 +90,6 @@
     {
       "title": "检测配置",
       "questions": [
-        
         {
           "title": "API配置",
           "description": "API应支持windows、linux、XC服务器进行调用，应支持异步和同步接口，应支持通过API进行检测策略控制",
