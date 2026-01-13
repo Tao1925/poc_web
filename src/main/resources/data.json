@@ -2,7 +2,7 @@
   "users": [
     {
       "username": "admin",
-      "password": "123456"
+      "password": "admin"
     },
     {
       "username": "qianxin",
@@ -32,17 +32,17 @@
         },
         {
           "title": "检测规则自定义",
-          "description": "软件应支持常见的检测规则自定义，包括但不限于YARA规则，黑名单，白名单等。\n 请配置自定义策略后截图证明效果，截图应包含 \n ·检测规则配置前查杀效果 \n ·检测结果配置截图 \n ·检测结果配置后查杀效果",
+          "description": "软件应支持常见的检测规则自定义，包括但不限于YARA规则，黑名单，白名单等。请配置自定义策略后截图证明效果，截图应包含 1、检测规则配置前查杀效果 2、检测结果配置截图 3、检测结果配置后查杀效果",
           "total_score": 3.0
         },
         {
           "title": "静态检测能力测试",
-          "description": "病毒样本在http://12.99.200.7/8-沙箱POC/virus_static(virus).zip中，请使用API进行静态检测，将代码和检测结果截图上传，截图应包含\n ·在linux和windows环境下，用java和另一种编程语言，分别进行API调用的代码和效果截图 \n ·管理端的查杀结果截图，并且在增加说明：XX厂商样本 yy/50 ",
+          "description": "病毒样本在http://12.99.200.7/8-沙箱POC/virus_static(virus).zip中，请使用API进行静态检测，将代码和检测结果截图上传，截图应包含 1、在linux和windows环境下，用java和另一种编程语言，分别进行API调用的代码和效果截图(推荐在kylin机器上运行java，windows机器上运行另一种语言，截图需证明程序能正常在两个环境上运行) 2、管理端的查杀结果截图，并且增加说明：XX厂商样本检出率: yy/50 ",
           "total_score": 10.0
         },
         {
           "title": "静态误杀测试",
-          "description": "TODO",
+          "description": "打开http://12.99.200.7/8-沙箱POC/，安装python，下载py和bat文件，放到同一目录，执行bat文件，将生成的test_files_big_11111文件夹中的所有文件上传到沙箱，进行静态查杀，记录查杀结果和用时",
           "total_score": 3.0
         }
       ]
@@ -52,37 +52,37 @@
       "questions": [
         {
           "title": "沙箱类型",
-          "description": "软件应支持不同的沙箱，包括但不限于，主流的windows终端和服务器版本、主流的linux版本，主流的XC终端和服务器版本",
+          "description": "软件应支持不同的沙箱，包括但不限于，主流的windows终端和服务器版本、主流的linux版本，主流的XC终端和服务器版本，需截图展示支持的沙箱版本",
           "total_score": 3.0
         },
         {
           "title": "沙箱自定义",
-          "description": "请截图展示沙箱的可自定义能力",
+          "description": "请截图展示沙箱的可自定义能力，需展示一个自定义沙箱的配置流程并上传到服务器，并对这个自定义沙箱的能力进行测试",
           "total_score": 2.0
         },
         {
           "title": "逃逸检测",
-          "description": "请截图展示沙箱的反虚拟机检测技术",
+          "description": "请截图展示沙箱的反虚拟机检测技术，需截图展示一个含有逃逸能力病毒的沙箱检测报告",
           "total_score": 2.0
         },
         {
           "title": "压缩包检测",
-          "description": "请截图展示沙箱对压缩包检测能力",
+          "description": "请截图展示沙箱对压缩包检测能力，检测http://12.99.200.7/8-沙箱POC/3level_zip_with_virus.zip这个文件并记录结果",
           "total_score": 3.0
         },
         {
           "title": "动态检测规则自定义",
-          "description": "沙箱应支持对风险操作自定义检测规则，包括但不限于：注册表修改、进程注入、文件操作、内存修改、网络动作等",
+          "description": "沙箱应支持对风险操作自定义检测规则，包括但不限于：注册表修改、进程注入、文件操作、内存修改、网络动作等，请截图证明自定义规则的效果，需包含规则和实际的检测示例（规则修改前和修改后的检测结果应不同）",
           "total_score": 5.0
         },
         {
           "title": "动态检测能力测试",
-          "description": "病毒样本在http://12.99.200.7/8-沙箱POC/virus_dynamic(virus).zip中，请使用API进行动态检测，将代码和检测结果截图上传",
+          "description": "病毒样本在http://12.99.200.7/8-沙箱POC/virus_dynamic(virus).zip中，请使用API进行静态检测，将代码和检测结果截图上传，截图应包含 1、在linux和windows环境下，用java和另一种编程语言，分别进行API调用的代码和效果截图 2、管理端的查杀结果截图，并且增加说明：XX厂商样本检出率: yy/50 ",
           "total_score": 10.0
         },
         {
           "title": "动态误杀测试",
-          "description": "TODO",
+          "description": "1、将之前静态误杀中生成的test_files_small_1111文件夹中的所有文件上传到沙箱，进行动态查杀，记录查杀结果和用时 2、将200个动态样本一并进行动态查杀，记录查杀结果和用时",
           "total_score": 3.0
         }
       ]
@@ -112,12 +112,12 @@
         },
         {
           "title": "静态检测性能",
-          "description": "对静态检测的时间使用情况进行评估",
+          "description": "对静态检测的时间使用情况进行评估,请展示静态误杀测试中所记录的时间",
           "total_score": 5.0
         },
         {
           "title": "动态检测性能",
-          "description": "对动态检测的时间使用情况进行评估",
+          "description": "对动态检测的时间使用情况进行评估,请展示动态误杀测试中所记录的时间",
           "total_score": 5.0
         }
       ]
@@ -137,32 +137,32 @@
         },
         {
           "title": "访问控制",
-          "description": "管理端能限制登陆IP",
+          "description": "管理端能限制登陆IP，请截图证明（展示管理端配置，收到限制的IP不能登陆，放通的IP允许登陆）",
           "total_score": 2.0
         },
         {
           "title": "权限管理",
-          "description": "管理端能设置管理员用户、查询用户、巡检用户等不同权限的角色",
+          "description": "管理端能设置管理员用户、查询用户、巡检用户等不同权限的角色，请配置不同的角色，并截图证明其对不同的数据有不同的访问权限",
           "total_score": 2.0
         },
         {
           "title": "系统国产化",
-          "description": "管理端应使用国产操作系统",
+          "description": "管理端应使用国产操作系统，请截图证明",
           "total_score": 2.0
         },
         {
           "title": "硬件国产化",
-          "description": "沙箱服务器应使用国产硬件",
+          "description": "沙箱服务器应使用国产硬件，请截图证明",
           "total_score": 2.0
         },
         {
           "title": "主备部署",
-          "description": "沙箱应支持主备部署",
+          "description": "沙箱应支持主备部署（主备部署一般指：主节点承担全部流量，备节点只做数据备份和设备冗余功能，在主节点故障时，能承担流量）",
           "total_score": 2.0
         },
         {
           "title": "集群部署",
-          "description": "沙箱应支持集群部署",
+          "description": "沙箱应支持集群部署（集群部署一般指：所有节点都承担部分流量，任一节点故障，剩余节点能承担流量并保证数据一致性",
           "total_score": 2.0
         },
         {
@@ -172,12 +172,12 @@
         },
         {
           "title": "技术栈生命周期",
-          "description": "软件所使用的技术栈应符合行内的技术栈生命周期",
+          "description": "软件所使用的技术栈应符合行内的技术栈生命周期，请配上软件所使用的技术栈和版本，应包含1、后端框架（如SpringBoot 2.4) 2、前端框架（如Vue 2.5）3、后端程序语言（如C++11/python3.8/JDK11）4、数据库（如mysql 8.0）5、redis版本（如有）6、nginx版本（如有）7、docker/K8S版本（如有）8、消息中间件版本（如有）（例：kafka2.5 rocketMQ3.1)",
           "total_score": 2.0
         },
         {
           "title": "技术转移能力",
-          "description": "软件是否有配套齐全的教程和文档",
+          "description": "软件是否有配套齐全的教程和文档，请提供相关文档给我，并在此处进行截图",
           "total_score": 2.0
         }
       ]
