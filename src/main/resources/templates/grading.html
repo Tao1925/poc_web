@@ -264,6 +264,9 @@
             position: fixed;
             left: 20px;
             bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .export-btn {
@@ -327,6 +330,7 @@
     </div>
 
     <div class="export-action">
+        <button class="export-btn" onclick="exportScores()" style="background-color: #27ae60;">导出得分数据</button>
         <button class="export-btn" onclick="exportAnswers()">导出答题数据</button>
     </div>
 
@@ -497,6 +501,65 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('判题系统已加载，当前用户:', currentUsername);
         });
+
+        async function exportScores() {
+            if (currentUsername !== 'admin') {
+                showStatus('error', '仅管理员可导出');
+                return;
+            }
+            try {
+                showStatus('success', '开始导出得分...');
+                const res = await fetch(`/grading/exportScores?username=${currentUsername}`);
+                if (!res.ok) {
+                    const t = await res.text();
+                    showStatus('error', t || '导出失败');
+                    return;
+                }
+                const blob = await res.blob();
+                const now = new Date();
+                const y = String(now.getFullYear()).slice(-2);
+                const m = String(now.getMonth() + 1).padStart(2, '0');
+                const d = String(now.getDate()).padStart(2, '0');
+                const filename = `poc_score_${y}${m}${d}.csv`;
+
+                if (window.showSaveFilePicker) {
+                    try {
+                        const handle = await window.showSaveFilePicker({
+                            suggestedName: filename,
+                            types: [{ description: 'CSV', accept: { 'text/csv': ['.csv'] } }]
+                        });
+                        const writable = await handle.createWritable();
+                        await writable.write(blob);
+                        await writable.close();
+                        showStatus('success', '导出完成');
+                    } catch (e) {
+                        if (e.name !== 'AbortError') {
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = filename;
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                            URL.revokeObjectURL(url);
+                            showStatus('success', '导出完成');
+                        }
+                    }
+                } else {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                    showStatus('success', '导出完成');
+                }
+            } catch (e) {
+                showStatus('error', '导出失败: ' + e.message);
+            }
+        }
 
         async function exportAnswers() {
             if (currentUsername !== 'admin') {

@@ -177,6 +177,74 @@ public class GradingController {
                 .body(body);
     }
 
+    @GetMapping("/grading/exportScores")
+    @ResponseBody
+    public ResponseEntity<StreamingResponseBody> exportScores(@RequestParam String username) {
+        Optional<User> u = userRepository.findByUsername(username);
+        if (!u.isPresent() || !"admin".equals(username)) {
+            return ResponseEntity.status(403).body(null);
+        }
+
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyMMdd");
+        String fname = "poc_score_" + LocalDate.now().format(df) + ".csv";
+
+        StreamingResponseBody body = (OutputStream os) -> {
+            // Write BOM for Excel compatibility
+            os.write(new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF});
+
+            StringBuilder sb = new StringBuilder();
+
+            // 1. Get Users (exclude admin, sort by ID to match data.json order)
+            List<User> users = userRepository.findAll().stream()
+                    .filter(user -> user.getUsername() != null && !"admin".equals(user.getUsername()))
+                    .sorted(Comparator.comparing(User::getId))
+                    .collect(Collectors.toList());
+
+            // 2. Get Questions
+            List<Question> questions = questionRepository.findAllOrderByChapterAndSortOrder();
+
+            // 3. Header Row: empty, total, user1, user2...
+            sb.append(",total");
+            for (User user : users) {
+                sb.append(",").append(escapeCsv(user.getUsername()));
+            }
+            sb.append("\n");
+
+            // 4. Data Rows
+            for (Question q : questions) {
+                sb.append(escapeCsv(q.getTitle()));
+                sb.append(",").append(q.getTotalScore() != null ? (int) q.getTotalScore().doubleValue() : 0);
+
+                for (User user : users) {
+                    sb.append(",");
+                    Optional<Answer> ansOpt = answerRepository.findByQuestionIdAndUserId(q.getId(), user.getId());
+                    int score = 0;
+                    if (ansOpt.isPresent() && ansOpt.get().getScore() != null) {
+                        score = (int) ansOpt.get().getScore().doubleValue();
+                    }
+                    sb.append(score);
+                }
+                sb.append("\n");
+            }
+
+            os.write(sb.toString().getBytes(StandardCharsets.UTF_8));
+        };
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, "text/csv; charset=UTF-8")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + URLEncoder.encode(fname, StandardCharsets.UTF_8))
+                .body(body);
+    }
+
+    private String escapeCsv(String s) {
+        if (s == null) return "";
+        if (s.contains(",") || s.contains("\"") || s.contains("\n")) {
+            return "\"" + s.replace("\"", "\"\"") + "\"";
+        }
+        return s;
+    }
+
+
     private String sanitizeFilename(String s) {
         StringBuilder r = new StringBuilder();
         for (char ch : s.toCharArray()) {
