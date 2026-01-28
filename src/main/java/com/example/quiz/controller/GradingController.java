@@ -2,6 +2,8 @@ package com.example.quiz.controller;
 
 import com.example.quiz.model.*;
 import com.example.quiz.repository.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
@@ -12,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -38,12 +39,15 @@ public class GradingController {
     
     @Autowired
     private UserRepository userRepository;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GradingController.class);
     
     @GetMapping("/grading")
     public String gradingPage(@RequestParam String username, Model model) {
         // 验证是否为admin用户
         Optional<User> userOptional = userRepository.findByUsername(username);
         if (!userOptional.isPresent() || !"admin".equals(username)) {
+            LOGGER.warn("Unauthorized grading page access. username={}", username);
             return "redirect:/login";
         }
         
@@ -64,6 +68,7 @@ public class GradingController {
     public ResponseEntity<List<Map<String, Object>>> getQuestionAnswers(@PathVariable Long questionId) {
         Optional<Question> questionOptional = questionRepository.findById(questionId);
         if (!questionOptional.isPresent()) {
+            LOGGER.warn("Grading answers requested for missing question. questionId={}", questionId);
             return ResponseEntity.notFound().build();
         }
         
@@ -99,6 +104,7 @@ public class GradingController {
         try {
             Optional<Answer> answerOptional = answerRepository.findById(answerId);
             if (!answerOptional.isPresent()) {
+                LOGGER.warn("Update score failed: answer not found. answerId={}", answerId);
                 return ResponseEntity.badRequest().body("答案不存在");
             }
             
@@ -107,15 +113,20 @@ public class GradingController {
             
             // 验证分数不能超过总分
             if (totalScore != null && score > totalScore) {
+                LOGGER.warn("Update score failed: score exceeds total. answerId={}, score={}, totalScore={}",
+                        answerId, score, totalScore);
                 return ResponseEntity.badRequest().body("得分不能超过总分: " + totalScore);
             }
             
             answer.setScore(score);
             answer.setRemark(remark);  // 更新备注
             answerRepository.save(answer);
+            LOGGER.info("Score updated. answerId={}, score={}, totalScore={}, remarkLen={}",
+                    answerId, score, totalScore, remark != null ? remark.length() : 0);
             
             return ResponseEntity.ok("评分成功");
         } catch (Exception e) {
+            LOGGER.error("Update score error. answerId={}, score={}", answerId, score, e);
             return ResponseEntity.internalServerError().body("评分失败: " + e.getMessage());
         }
     }
@@ -125,6 +136,7 @@ public class GradingController {
     public ResponseEntity<StreamingResponseBody> export(@RequestParam String username) {
         Optional<User> u = userRepository.findByUsername(username);
         if (!u.isPresent() || !"admin".equals(username)) {
+            LOGGER.warn("Unauthorized export request. username={}", username);
             return ResponseEntity.status(403).body(null);
         }
         DateTimeFormatter df = DateTimeFormatter.ofPattern("yyMMdd");
@@ -135,6 +147,7 @@ public class GradingController {
                         .filter(user -> user.getUsername() != null && !"admin".equals(user.getUsername()))
                         .collect(Collectors.toList());
                 List<Question> questions = questionRepository.findAllOrderByChapterAndSortOrder();
+                LOGGER.info("Export answers start. users={}, questions={}", users.size(), questions.size());
                 for (User user : users) {
                     String safe = sanitizeFilename(user.getUsername()) + ".html";
                     zos.putNextEntry(new ZipEntry(safe));
@@ -169,6 +182,10 @@ public class GradingController {
                     zos.write(bytes);
                     zos.closeEntry();
                 }
+                LOGGER.info("Export answers done. users={}", users.size());
+            } catch (Exception e) {
+                LOGGER.error("Export answers error", e);
+                throw e;
             }
         };
         return ResponseEntity.ok()
@@ -182,6 +199,7 @@ public class GradingController {
     public ResponseEntity<StreamingResponseBody> exportScores(@RequestParam String username) {
         Optional<User> u = userRepository.findByUsername(username);
         if (!u.isPresent() || !"admin".equals(username)) {
+            LOGGER.warn("Unauthorized exportScores request. username={}", username);
             return ResponseEntity.status(403).body(null);
         }
 
@@ -189,45 +207,52 @@ public class GradingController {
         String fname = "poc_score_" + LocalDate.now().format(df) + ".csv";
 
         StreamingResponseBody body = (OutputStream os) -> {
-            // Write BOM for Excel compatibility
-            os.write(new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF});
+            try {
+                // Write BOM for Excel compatibility
+                os.write(new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF});
 
-            StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new StringBuilder();
 
-            // 1. Get Users (exclude admin, sort by ID to match data.json order)
-            List<User> users = userRepository.findAll().stream()
-                    .filter(user -> user.getUsername() != null && !"admin".equals(user.getUsername()))
-                    .sorted(Comparator.comparing(User::getId))
-                    .collect(Collectors.toList());
+                // 1. Get Users (exclude admin, sort by ID to match data.json order)
+                List<User> users = userRepository.findAll().stream()
+                        .filter(user -> user.getUsername() != null && !"admin".equals(user.getUsername()))
+                        .sorted(Comparator.comparing(User::getId))
+                        .collect(Collectors.toList());
 
-            // 2. Get Questions
-            List<Question> questions = questionRepository.findAllOrderByChapterAndSortOrder();
+                // 2. Get Questions
+                List<Question> questions = questionRepository.findAllOrderByChapterAndSortOrder();
+                LOGGER.info("Export scores start. users={}, questions={}", users.size(), questions.size());
 
-            // 3. Header Row: empty, total, user1, user2...
-            sb.append(",total");
-            for (User user : users) {
-                sb.append(",").append(escapeCsv(user.getUsername()));
-            }
-            sb.append("\n");
-
-            // 4. Data Rows
-            for (Question q : questions) {
-                sb.append(escapeCsv(q.getTitle()));
-                sb.append(",").append(q.getTotalScore() != null ? (int) q.getTotalScore().doubleValue() : 0);
-
+                // 3. Header Row: empty, total, user1, user2...
+                sb.append(",total");
                 for (User user : users) {
-                    sb.append(",");
-                    Optional<Answer> ansOpt = answerRepository.findByQuestionIdAndUserId(q.getId(), user.getId());
-                    int score = 0;
-                    if (ansOpt.isPresent() && ansOpt.get().getScore() != null) {
-                        score = (int) ansOpt.get().getScore().doubleValue();
-                    }
-                    sb.append(score);
+                    sb.append(",").append(escapeCsv(user.getUsername()));
                 }
                 sb.append("\n");
-            }
 
-            os.write(sb.toString().getBytes(StandardCharsets.UTF_8));
+                // 4. Data Rows
+                for (Question q : questions) {
+                    sb.append(escapeCsv(q.getTitle()));
+                    sb.append(",").append(q.getTotalScore() != null ? (int) q.getTotalScore().doubleValue() : 0);
+
+                    for (User user : users) {
+                        sb.append(",");
+                        Optional<Answer> ansOpt = answerRepository.findByQuestionIdAndUserId(q.getId(), user.getId());
+                        int score = 0;
+                        if (ansOpt.isPresent() && ansOpt.get().getScore() != null) {
+                            score = (int) ansOpt.get().getScore().doubleValue();
+                        }
+                        sb.append(score);
+                    }
+                    sb.append("\n");
+                }
+
+                os.write(sb.toString().getBytes(StandardCharsets.UTF_8));
+                LOGGER.info("Export scores done. users={}", users.size());
+            } catch (Exception e) {
+                LOGGER.error("Export scores error", e);
+                throw e;
+            }
         };
 
         return ResponseEntity.ok()

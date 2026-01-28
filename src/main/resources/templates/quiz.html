@@ -90,6 +90,9 @@
         function selectQuestion(element) {
             const questionId = element.dataset.questionId;
             const questionTitle = element.dataset.questionTitle;
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/022c29b4-78cd-40a5-871b-9b15bf7de0ae',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'templates/quiz.html:selectQuestion',message:'selectQuestion',data:{questionId,questionTitle,prevQuestionId:currentQuestionId,prevQuestionTitle:currentQuestionTitle,username:currentUsername},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H2'})}).catch(()=>{});
+            // #endregion
             document.querySelectorAll('.question-item').forEach(item => { item.classList.remove('active'); });
             element.classList.add('active');
             loadQuestion(questionId, questionTitle);
@@ -107,6 +110,9 @@
                         <div class="question-title">${question.questionNumber}. ${question.title}</div>
                         <div class="question-description">${question.description}</div>
                     `;
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/022c29b4-78cd-40a5-871b-9b15bf7de0ae',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'templates/quiz.html:loadQuestion',message:'questionLoaded',data:{requestedId:questionId,responseId:question.id,currentQuestionId,questionTitle:question.title},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H2'})}).catch(()=>{});
+                    // #endregion
                 })
                 .catch(error => { console.error('加载题目失败:', error); });
         }
@@ -130,6 +136,9 @@
                     }
                     const questionItem = document.querySelector(`[data-question-id="${questionId}"]`);
                     if (answer.content && answer.content.trim()) { questionItem.classList.add('answered'); } else { questionItem.classList.remove('answered'); }
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/022c29b4-78cd-40a5-871b-9b15bf7de0ae',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'templates/quiz.html:loadAnswer',message:'answerLoaded',data:{requestUrl:url,requestedId:questionId,requestedTitle:questionTitle,responseQuestionId:answer.questionId,currentQuestionId,contentLen:answer.content?answer.content.length:0},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H1'})}).catch(()=>{});
+                    // #endregion
                 })
                 .catch(error => { console.error('加载答案失败:', error); showSaveStatus('error', '加载答案失败: ' + error.message); });
         }
@@ -161,6 +170,9 @@
             await normalizeImages();
             const content = document.getElementById('answer-editor').innerHTML;
             if (!content || content.trim() === '' || content === '<br>' || content === '<div><br></div>') { console.log('答案内容为空，跳过保存'); return; }
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/022c29b4-78cd-40a5-871b-9b15bf7de0ae',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'templates/quiz.html:saveAnswer',message:'saveAnswerStart',data:{currentQuestionId,currentQuestionTitle,contentLen:content.length,username:currentUsername},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H3'})}).catch(()=>{});
+            // #endregion
             const formData = new FormData();
             if (currentQuestionId) formData.append('questionId', currentQuestionId);
             if (currentQuestionTitle) formData.append('questionTitle', currentQuestionTitle);
@@ -188,6 +200,9 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             const editor = document.getElementById('answer-editor');
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/022c29b4-78cd-40a5-871b-9b15bf7de0ae',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'templates/quiz.html:DOMContentLoaded',message:'domReady',data:{username:currentUsername,hasEditor:!!editor},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H4'})}).catch(()=>{});
+            // #endregion
             editor.addEventListener('focus', function() { if (this.innerHTML === '') { this.innerHTML = ''; } });
             editor.addEventListener('blur', function() { if (this.innerHTML === '') { this.innerHTML = ''; } });
             editor.addEventListener('paste', function(e) {

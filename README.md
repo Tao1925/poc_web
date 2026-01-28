@@ -46,7 +46,7 @@ mvn spring-boot:run
 
 - IDE 连接（IntelliJ IDEA/Datagrip 等）
   - 新建数据源选择 `H2 (Embedded)`
-  - URL：`jdbc:h2:file:/Users/mac/IdeaProjects/poc_web/data/pocdb`
+  - URL：`jdbc:h2:file:./data/pocdb`
     - 或使用上面的 JDBC URL（相对路径）
   - 用户名：`sa`，密码：留空
   - 注意：如果使用外部工具连接，建议先停止运行中的应用以避免文件锁

@@ -19,4 +19,6 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     List<Question> findAllOrderByChapterAndSortOrder();
 
     Optional<Question> findByTitle(String title);
+
+    List<Question> findAllByTitle(String title);
 }
