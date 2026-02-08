@@ -10,6 +10,32 @@ mvn spring-boot:run
 
 访问：http://localhost:8080/
 
+### JVM 参数建议（减少大图片引发的 OOM）
+- Maven 运行已内置默认参数，可通过 `-Dapp.jvm.args="..."` 覆盖
+- Jar 运行可使用 `ai_script/run_jar.sh`（支持 `APP_JVM_ARGS` 覆盖）
+
+默认参数：
+```
+-XX:MaxRAMPercentage=70 -XX:InitialRAMPercentage=20 -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=./data/heapdump.hprof
+```
+
+示例：
+```bash
+# Maven 方式自定义
+mvn spring-boot:run -Dapp.jvm.args="-XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=25 -XX:+UseG1GC"
+
+# Jar 方式（默认参数）
+./ai_script/run_jar.sh
+
+# Jar 方式自定义
+APP_JVM_ARGS="-XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=25 -XX:+UseG1GC" ./ai_script/run_jar.sh target/poc_web-0.0.1-SNAPSHOT.jar
+```
+
+### H2 数据库并发访问注意事项
+- H2 文件模式不支持被多个进程直接同时打开。
+- 本项目启动时会创建数据库锁文件（`*.process.lock`），防止重复启动占用同一数据库文件。
+- 运行导出脚本时请优先使用备份文件（`data/backups`），避免直接访问正在运行的数据库。
+
 测试账号：
 - `admin` / `123456` - 管理员（判题界面）
 - `student1` / `student123` - 学生（答题界面）

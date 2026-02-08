@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Controller
 public class QuizController {
@@ -40,6 +41,7 @@ public class QuizController {
     private UserRepository userRepository;
 
     private static final String DEBUG_LOG_PATH = java.nio.file.Paths.get("data", "debug.log").toString();
+    private static final String DEBUG_MODE_LOG_PATH = "/Users/mac/IdeaProjects/poc_web/.cursor/debug.log";
     private static final ObjectMapper DEBUG_MAPPER = new ObjectMapper();
     private static final Logger LOGGER = LoggerFactory.getLogger(QuizController.class);
 
@@ -55,6 +57,27 @@ public class QuizController {
             payload.put("timestamp", System.currentTimeMillis());
             String json = DEBUG_MAPPER.writeValueAsString(payload);
             Path logPath = Paths.get(DEBUG_LOG_PATH);
+            if (logPath.getParent() != null) {
+                Files.createDirectories(logPath.getParent());
+            }
+            Files.write(logPath, (json + System.lineSeparator()).getBytes(StandardCharsets.UTF_8),
+                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void debugModeLog(String hypothesisId, String location, String message, Map<String, Object> data) {
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("sessionId", "debug-session");
+            payload.put("runId", "pre-fix");
+            payload.put("hypothesisId", hypothesisId);
+            payload.put("location", location);
+            payload.put("message", message);
+            payload.put("data", data);
+            payload.put("timestamp", System.currentTimeMillis());
+            String json = DEBUG_MAPPER.writeValueAsString(payload);
+            Path logPath = Paths.get(DEBUG_MODE_LOG_PATH);
             if (logPath.getParent() != null) {
                 Files.createDirectories(logPath.getParent());
             }
@@ -226,23 +249,49 @@ public class QuizController {
                                            @RequestParam String content, 
                                            @RequestParam String username) {
         try {
+            String traceId = UUID.randomUUID().toString();
+            Runtime rt = Runtime.getRuntime();
             // #region agent log
-            debugLog("H3", "QuizController.saveAnswer:entry", "saveAnswerStart", new HashMap<>(Map.of(
-                    "questionId", questionId,
-                    "questionTitle", questionTitle,
-                    "username", username,
-                    "contentLen", content != null ? content.length() : 0
-            )));
+            Map<String, Object> entryPayload = new HashMap<>();
+            entryPayload.put("traceId", traceId);
+            entryPayload.put("questionId", questionId);
+            entryPayload.put("questionTitle", questionTitle);
+            entryPayload.put("username", username);
+            entryPayload.put("contentLen", content != null ? content.length() : 0);
+            entryPayload.put("heapMaxBytes", rt.maxMemory());
+            entryPayload.put("heapTotalBytes", rt.totalMemory());
+            entryPayload.put("heapFreeBytes", rt.freeMemory());
+            debugModeLog("H1", "QuizController.saveAnswer:entry", "saveAnswerEntry", entryPayload);
+            // #endregion
+            // #region agent log
+            Map<String, Object> entryPayloadLegacy = new HashMap<>();
+            entryPayloadLegacy.put("questionId", questionId);
+            entryPayloadLegacy.put("questionTitle", questionTitle);
+            entryPayloadLegacy.put("username", username);
+            entryPayloadLegacy.put("contentLen", content != null ? content.length() : 0);
+            debugLog("H3", "QuizController.saveAnswer:entry", "saveAnswerStart", entryPayloadLegacy);
             // #endregion
             // 验证用户是否存在
             Optional<User> userOptional = userRepository.findByUsername(username);
             if (!userOptional.isPresent()) {
+                // #region agent log
+                Map<String, Object> userMissingPayload = new HashMap<>();
+                userMissingPayload.put("traceId", traceId);
+                userMissingPayload.put("username", username);
+                debugModeLog("H2", "QuizController.saveAnswer:userMissing", "userNotFound", userMissingPayload);
+                // #endregion
                 LOGGER.warn("Save answer failed: unknown user. questionId={}, questionTitle={}, username={}",
                         questionId, questionTitle, username);
                 return ResponseEntity.badRequest().body("用户不存在: " + username);
             }
 
             if (questionId == null && questionTitle == null) {
+                // #region agent log
+                Map<String, Object> missingQuestionPayload = new HashMap<>();
+                missingQuestionPayload.put("traceId", traceId);
+                missingQuestionPayload.put("username", username);
+                debugModeLog("H2", "QuizController.saveAnswer:missingQuestion", "missingQuestionIdentifiers", missingQuestionPayload);
+                // #endregion
                 LOGGER.warn("Save answer failed: missing question identifiers. username={}", username);
                 return ResponseEntity.badRequest().body("必须提供题目ID或题目名称");
             }
@@ -259,6 +308,13 @@ public class QuizController {
             }
 
             if (!questionOptional.isPresent()) {
+                // #region agent log
+                Map<String, Object> questionMissingPayload = new HashMap<>();
+                questionMissingPayload.put("traceId", traceId);
+                questionMissingPayload.put("questionId", questionId);
+                questionMissingPayload.put("questionTitle", questionTitle);
+                debugModeLog("H2", "QuizController.saveAnswer:questionMissing", "questionNotFound", questionMissingPayload);
+                // #endregion
                 LOGGER.warn("Save answer failed: question not found. questionId={}, questionTitle={}, username={}",
                         questionId, questionTitle, username);
                 return ResponseEntity.badRequest().body("题目不存在: " + (questionTitle != null ? questionTitle : questionId));
@@ -267,12 +323,12 @@ public class QuizController {
             User user = userOptional.get();
             Question question = questionOptional.get();
             // #region agent log
-            debugLog("H1", "QuizController.saveAnswer:resolved", "resolvedQuestion", new HashMap<>(Map.of(
-                    "resolvedQuestionId", question.getId(),
-                    "resolvedQuestionTitle", question.getTitle(),
-                    "inputQuestionId", questionId,
-                    "inputQuestionTitle", questionTitle
-            )));
+            Map<String, Object> resolvedPayload = new HashMap<>();
+            resolvedPayload.put("resolvedQuestionId", question.getId());
+            resolvedPayload.put("resolvedQuestionTitle", question.getTitle());
+            resolvedPayload.put("inputQuestionId", questionId);
+            resolvedPayload.put("inputQuestionTitle", questionTitle);
+            debugLog("H1", "QuizController.saveAnswer:resolved", "resolvedQuestion", resolvedPayload);
             // #endregion
             
             // 查找现有答案
@@ -291,7 +347,28 @@ public class QuizController {
                 answer = new Answer(content, question, user);
             }
             
+            // #region agent log
+            Runtime rtBeforeSave = Runtime.getRuntime();
+            Map<String, Object> beforeSavePayload = new HashMap<>();
+            beforeSavePayload.put("traceId", traceId);
+            beforeSavePayload.put("isUpdate", isUpdate);
+            beforeSavePayload.put("answerId", answer.getId());
+            beforeSavePayload.put("contentLen", content != null ? content.length() : 0);
+            beforeSavePayload.put("heapTotalBytes", rtBeforeSave.totalMemory());
+            beforeSavePayload.put("heapFreeBytes", rtBeforeSave.freeMemory());
+            debugModeLog("H1", "QuizController.saveAnswer:beforeSave", "beforeSave", beforeSavePayload);
+            // #endregion
             answerRepository.save(answer);
+            // #region agent log
+            Runtime rtAfterSave = Runtime.getRuntime();
+            Map<String, Object> afterSavePayload = new HashMap<>();
+            afterSavePayload.put("traceId", traceId);
+            afterSavePayload.put("savedAnswerId", answer.getId());
+            afterSavePayload.put("savedQuestionId", answer.getQuestion().getId());
+            afterSavePayload.put("heapTotalBytes", rtAfterSave.totalMemory());
+            afterSavePayload.put("heapFreeBytes", rtAfterSave.freeMemory());
+            debugModeLog("H1", "QuizController.saveAnswer:afterSave", "afterSave", afterSavePayload);
+            // #endregion
             LOGGER.info("Answer saved. answerId={}, questionId={}, questionTitle={}, username={}, isUpdate={}, contentLen={}",
                     answer.getId(), question.getId(), question.getTitle(), username, isUpdate,
                     content != null ? content.length() : 0);
@@ -307,6 +384,12 @@ public class QuizController {
             return ResponseEntity.ok(message);
             
         } catch (Exception e) {
+            // #region agent log
+            Map<String, Object> errorPayload = new HashMap<>();
+            errorPayload.put("errorType", e.getClass().getName());
+            errorPayload.put("errorMessage", e.getMessage() != null ? e.getMessage() : "");
+            debugModeLog("H3", "QuizController.saveAnswer:error", "saveAnswerException", errorPayload);
+            // #endregion
             LOGGER.error("Save answer error. questionId={}, questionTitle={}, username={}",
                     questionId, questionTitle, username, e);
             return ResponseEntity.internalServerError().body("保存失败: " + e.getMessage());
